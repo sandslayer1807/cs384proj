@@ -30,7 +30,7 @@ import javax.swing.UIManager;
  */
 public class MainFrame extends JApplet implements ActionListener {
     
-    private static final Dimension MASTER_WINDOW_SIZE = new Dimension (1000,800);
+    private static final Dimension MASTER_WINDOW_SIZE = new Dimension (1000,700);
     private JInternalFrame authorFrame, problemFrame, algorithmFrame;
     private JRadioButtonMenuItem ricartAgrawala, modRicartAgrawala;
     private JMenuItem authorMenuItem, problemMenuItem;
@@ -78,14 +78,17 @@ public class MainFrame extends JApplet implements ActionListener {
         
         if(source instanceof JRadioButtonMenuItem) {
             if(ricartAgrawala.isSelected())
-                vizPanel.setMethod("ricart agrawala");
+                vizPanel.setMethod("ricart-agrawala");
             else if(modRicartAgrawala.isSelected())
-                vizPanel.setMethod("modified ricart agrawala");
+                vizPanel.setMethod("modified ricart-agrawala");
+            else
+                System.out.println("ERROR: Setting method: no recognized method.");
         }
     }
     
     private JMenuBar createJMenu() {
         System.out.println("Creating the JMenu...");
+       
         JMenu algMenu = new JMenu("Algorithms");
         ButtonGroup g = new ButtonGroup();
         ricartAgrawala = new JRadioButtonMenuItem("Ricart-Agrawala Algorithm");
@@ -129,16 +132,17 @@ public class MainFrame extends JApplet implements ActionListener {
         
         algorithmFrame = new JInternalFrame("Algorithm Visualization", true, true, true, true);
         algorithmFrame.setResizable(false);
-        algorithmFrame.setDefaultCloseOperation(JInternalFrame.HIDE_ON_CLOSE);
+        algorithmFrame.setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);
         
         vizPanel = new VisualizationPanel();
         algorithmFrame.setContentPane(vizPanel);
         vizPanel.setDisplayedThreads();
         algorithmFrame.pack();
         virtualDesktop.add(algorithmFrame);
-        
+
         initAboutFrames();
         c.add(virtualDesktop);
+        algorithmFrame.setVisible(true);
    
     }
     

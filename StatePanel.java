@@ -20,30 +20,41 @@ public class StatePanel extends JPanel {
     private String state;
     private int left_loc;
     private int right_loc;
-    private int diameter;
+    private final int diameter;
+    private String cur_loc = "null";
+    
     
     public StatePanel() {
-        this.state = null;
+        this.state = "null";
         this.finished = false;
         setPreferredSize(new Dimension(900, 100));
-        left_loc = this.getWidth()/3;
-        right_loc = 2*(this.getWidth()/3);
-        diameter = 70;
+        diameter = 100;
+        //System.out.println("This.getwidth: "+this.getWidth()+ " and right_loc: "+right_loc);
+        this.setVisible(true);
     }
     
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if(finished) {
+        left_loc = this.getWidth()/8;
+        right_loc = 7*(this.getWidth()/8);
+        if(state.equalsIgnoreCase("finished")) {
             g.setColor(Color.GREEN);
+            finish();
+            if(cur_loc.equalsIgnoreCase("left"))
+                 g.fillOval(left_loc, this.getHeight()/3, diameter/2, diameter/2);
+            else
+                g.fillOval(right_loc, this.getHeight()/3, diameter/2, diameter/2);
         }
         else if(state.equalsIgnoreCase("left")) {
             g.setColor(Color.RED);
-            g.fillOval(left_loc, this.getHeight()/2, diameter/2, diameter/2);
+            g.fillOval(left_loc, this.getHeight()/3, diameter/2, diameter/2);
+            cur_loc = "left";
         }
         else if(state.equalsIgnoreCase("right")) {
             g.setColor(Color.BLUE);
-            g.fillOval(right_loc, this.getHeight()/2, diameter/2, diameter/2);
+            g.fillOval(right_loc, this.getHeight()/3, diameter/2, diameter/2);
+            cur_loc = "right";
         }
     }
     
@@ -52,8 +63,16 @@ public class StatePanel extends JPanel {
         repaint();
     }
     
+    public String getState() {
+        return state;
+    }
+    
     public void finish() {
         finished = true;
         repaint();
+    }
+    
+    public String returnLoc() {
+        return cur_loc;
     }
 }

@@ -41,7 +41,7 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
     public VisualizationPanel() {
         System.out.println("Making the Viz Panel...");
         threads = new LinkedList<WorkingThread>();
-        delaySlider = new JSlider(100, 500, 200);
+        delaySlider = new JSlider(100, 600, 200);
         delaySlider.addChangeListener(this);
         
         delaySliderBorder = new TitledBorder(delaySlider.getValue() + " ms");
@@ -59,7 +59,6 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
         
         algPanel = new JPanel();
         algPanel.setLayout(new GridLayout(0,1));
-        
         setLayout(new GridBagLayout());
         
         GridBagConstraints c = new GridBagConstraints();
@@ -85,6 +84,9 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
     
     public void setDisplayedThreads() {
         System.out.println("Setting the displayed threads...");
+        for(WorkingThread w: threads) {
+                w.setWorking(false);
+            }
         algPanel.removeAll();
         threads.clear();
         for(int i = 0; i < 4; i++)
@@ -94,21 +96,37 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
             threads.add(p);
             algPanel.add(p.displayPanel);
             p.displayPanel.setBorder(new TitledBorder("Thread "+p.getId()));
+            p.displayPanel.setVisible(true);
         }
         
         for (WorkingThread p : threads) {
             p.setDelay(delaySlider.getValue());
         }
+        //System.out.println("Size: "+algPanel.size());
     }
 
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == startButton) {
+            System.out.println("Started Working");
+            for(int i = 0; i < 4; i++) {
+                if( i % 2 == 0)
+                    threads.get(i).setState("right");
+                else
+                    threads.get(i).setState("left");
+            }
             for(WorkingThread w: threads) {
+                w.setCoworkers(threads);
                 w.setWorking(true);
                 w.execute();
             }
-        } else
+        } else if (e.getSource() == resetButton)
+        {
+            System.out.println("Stopped Working");
+            for(WorkingThread w: threads) {
+                w.setWorking(false);
+            }
             setDisplayedThreads();
+        }
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -123,6 +141,8 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
     }
     
     public void setMethod(String method) {
+        setDisplayedThreads();
+        System.out.println("Setting new method.");
         if(method.equalsIgnoreCase("ricart-agrawala"))
             this.method = 0;
         else if(method.equalsIgnoreCase("modified ricart-agrawala"))
@@ -131,7 +151,6 @@ public class VisualizationPanel extends JPanel implements ActionListener, Change
         for (WorkingThread i : threads) {
             i.setMethod(this.method);
         }
-        setDisplayedThreads();
     }
     
 }
