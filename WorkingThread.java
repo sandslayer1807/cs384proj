@@ -22,7 +22,7 @@ public class WorkingThread extends SwingWorker<Void, Void> {
     private int id;
     private int method;
     private volatile boolean stillWorking = false;
-    private volatile List<CriticalRequest> reqs = new LinkedList<CriticalRequest>();
+    private List<CriticalRequest> reqs = new LinkedList<CriticalRequest>();
     private CriticalRequest latestRequest;
     private List<WorkingThread> coworkers;
     private volatile int ackCount = 0;
@@ -113,9 +113,14 @@ public class WorkingThread extends SwingWorker<Void, Void> {
     private void sendRequestOld() {
         latestRequest = new CriticalRequest(id, null);
         System.out.println("Thread "+id+" has sent request with timestamp "+latestRequest.getRequestTime());
-        for(WorkingThread i : coworkers) {
+      /*  for(WorkingThread i : coworkers) {
             if( i.id != this.id) {
                 i.addRequest(latestRequest);
+            }
+        }*/
+        for(int i = 0; i < 4; i++) {
+            if( i != this.id) {
+                coworkers.get(i).addRequest(latestRequest);
             }
         }
     }
@@ -162,6 +167,8 @@ public class WorkingThread extends SwingWorker<Void, Void> {
            if(!reqs.isEmpty()) {
                for(int i=0; i < reqs.size(); i++)
                    processRequest(reqs.get(i));
+              // for(CriticalRequest i : reqs)
+              //      processRequest(i);
                
            }
            else {
@@ -200,18 +207,45 @@ public class WorkingThread extends SwingWorker<Void, Void> {
     
     private void modRicartAgrawala() {
         do {
-             setState("finished");
+           if(latestRequest == null)
+               sendRequestModified();
+           if(!reqs.isEmpty()) {
+               for(int i=0; i < reqs.size(); i++)
+                   processRequest(reqs.get(i));
+              // for(CriticalRequest i : reqs)
+              //      processRequest(i);
+               
+           }
+           else {
+               //System.out.println("Thread "+id+" has empty requests.");
+           }
+           if(ackCount == 3) { // Critical Section
+               synchronized(critLock) {
+                System.out.println("Thread "+id+" has entered CS.");
+                if(displayPanel.returnLoc().equals("right"))
+                    displayPanel.setState("left");
+                else
+                    displayPanel.setState("right");
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(WorkingThread.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                for(CriticalRequest i : reqs) {
+                    coworkers.get(i.getRequester()).incrementAck();
+                }
+                reqs.clear();
+                latestRequest = null;
+                ackCount = 0;
+                System.out.println("Thread "+id+" has exited CS.");
+               }
+           }
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException ex) {
                 Logger.getLogger(WorkingThread.class.getName()).log(Level.SEVERE, null, ex);
             }
-            setState("right");
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(WorkingThread.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
         } while(stillWorking);
     }
 }
